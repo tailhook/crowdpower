@@ -1,0 +1,12 @@
+Processes:
+  zerogw:
+    executable-path: /usr/bin/zerogw
+    arguments:
+    - zerogw
+    - --config=config/zerogw.yaml
+  python:
+    executable-path: /usr/bin/python
+    arguments:
+    - python
+    - -m
+    - crowdpower

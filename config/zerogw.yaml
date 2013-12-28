@@ -1,0 +1,34 @@
+Server:
+  listen:
+    - host: 0.0.0.0
+      port: 8000
+
+Routing:
+  routing: !Prefix
+  routing-by: !Path
+  map:
+    /*:
+      zmq-forward:
+        enabled: yes
+        socket: !zmq.Req
+        - !zmq.Bind ipc://./run/http.sock
+        contents:
+        - !Uri
+        - !Header Cookie
+        - !Header Content-Type
+        - !Body
+    /ws:
+      websocket:
+        enabled: yes
+        forward: !zmq.Push
+        - !zmq.Bind ipc://./run/fw.sock
+        subscribe: !zmq.Sub
+        - !zmq.Bind ipc://./run/sub.sock
+    /js/*: &static
+      static:
+        enabled: yes
+        root: ./public
+        restrict-root: no
+    /css/*: *static
+    /img/*: *static
+
