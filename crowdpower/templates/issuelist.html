@@ -4,7 +4,7 @@
 {% for i in issues %}
 <section>
     <span class="marker">#{{ i.id }}</span>
-    <p>{{ i.brief }} Votes:
+    <p>{{ i.brief }} Голосів:
         <span class="vote" id="votes_{{ i.id }}">{{ i.votes }}</b></p>
     {% for tl, t in i.tag_links() %}
         <a href="{{ tl }}">{{ t }}</a>
@@ -12,6 +12,10 @@
     {% for ll, l in i.level_links() %}
         <a href="{{ ll }}">{{ l }}</a>
     {% endfor %}
+    <form target="votetarget" method="POST" action="/issues/vote">
+        <input type="hidden" name="issue" value="{{ i.id }}">
+        <input type="submit" value="Підтримати">
+    </form>
 </section>
 {% endfor %}
 {% endblock body %}
