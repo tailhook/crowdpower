@@ -98,6 +98,20 @@ class Issues(web.Resource):
             for k in issue.keys()])
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
 
+    @web.page
+    def vote(self, issue:int, user:User):
+        data = self.redis.execute('GET', 'issue:{:d}'.format(issue))
+        iobj = Issue.load_blob(data)
+        self.redis.execute('SADD',
+            'votes:issue:{:d}'.format(iobj.id),
+            user.uid)
+        num = self.redis.execute('SCARD',
+            'votes:issue:{:d}'.format(iobj.id))
+        self.redis.pipeline([
+            ('ZADD', 'rt:' + k, 0, iobj.id)
+            for k in iobj.keys()])
+        raise web.CompletionRedirect('/i/{:d}'.format(iobj.id))
+
     @template('issuelist.html')
     @web.page
     def all(self, start:int=0, stop:int=9):
@@ -148,7 +162,6 @@ class ShowIssue(web.Resource):
     def i(self, num: int):
         data = self.redis.execute('GET', 'issue:{:d}'.format(num))
         issue = Issue.load_blob(data)
-        data = self.redis.execute('GET', 'issue:{:d}'.format(num))
         user = User.get(di(self), issue.uid)
         return {
             'issue': issue,

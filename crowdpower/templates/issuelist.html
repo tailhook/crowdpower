@@ -3,8 +3,9 @@
 {% block body %}
 {% for i in issues %}
 <section>
-<span class="marker">#{{ i.id }}</span>
-<p>{{ i.brief }} Votes: <b>{{ i.votes }}</b></p>
+    <span class="marker">#{{ i.id }}</span>
+    <p>{{ i.brief }} Votes:
+        <span class="vote" id="votes_{{ i.id }}">{{ i.votes }}</b></p>
     {% for tl, t in i.tag_links() %}
         <a href="{{ tl }}">{{ t }}</a>
     {% endfor %}
