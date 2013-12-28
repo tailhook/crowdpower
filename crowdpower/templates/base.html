@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<head>
+    <title>{% block title %}Crowd Power{% endblock %}</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <h1>{{ self.title() }}</h1>
+    {% block body %}{% endblock %}
+    <footer>(c) 2013 CrowdPower Team</footer>
+</body>

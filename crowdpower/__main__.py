@@ -1,13 +1,21 @@
+import jinja2
 from zorro import Hub
 from zorro import zmq
 from zorro import web
+from zorro.di import DependencyInjector, dependency, has_dependencies
+
+from .util import template
 
 
+@has_dependencies
 class About(web.Resource):
 
+    jinja = dependency(jinja2.Environment, 'jinja')
+
     @web.page
+    @template('index.html')
     def index(self):
-        return "Hello World!"
+        return {}
 
 
 class Request(web.Request):
@@ -21,10 +29,14 @@ class Request(web.Request):
 
 def main():
 
+    inj = DependencyInjector()
+    inj['jinja'] = jinja2.Environment(
+        loader=jinja2.PackageLoader(__name__, 'templates'))
+
     site = web.Site(
         request_class=Request,
         resources=[
-            About(),
+            inj.inject(About()),
         ])
     sock = zmq.rep_socket(site)
     sock.dict_configure({
