@@ -25,12 +25,6 @@ class User(TObject, web.Sticker):
 
     @classmethod
     def create(cls, resolver):
-        try:
-            return cls._create(resolver)
-        except Exception:
-            import traceback; traceback.print_exc()
-    @classmethod
-    def _create(cls, resolver):
         req = resolver.request
         sid = req.cookies.get('sidb')
         if sid is None:

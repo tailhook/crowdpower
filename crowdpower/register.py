@@ -87,7 +87,6 @@ class Register(web.Resource):
         self.redis.execute('HSET', 'emails', email, str(uid))
         self.redis.execute('HSET', 'phones', phone, str(uid))
         self.redis.execute('HSET', 'passwords', email, pw)
-        print("HSET", email, password, pw)
 
         self.authorize(uid)
 
@@ -106,7 +105,6 @@ class Register(web.Resource):
     @web.page
     def login(self, email, password):
         val = self.redis.execute('HGET', 'passwords', email)
-        print("HELLO", email, password, val)
         if val:
             try:
                 salt, hash = val.decode('ascii').split(':')
