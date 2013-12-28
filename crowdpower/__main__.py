@@ -5,6 +5,7 @@ from zorro import web
 from zorro.di import DependencyInjector, dependency, has_dependencies
 
 from .util import template
+from .register import Register
 
 
 @has_dependencies
@@ -36,6 +37,9 @@ def main():
     site = web.Site(
         request_class=Request,
         resources=[
+            web.DictResource(
+                register=inj.inject(Register())
+                ),
             inj.inject(About()),
         ])
     sock = zmq.rep_socket(site)
