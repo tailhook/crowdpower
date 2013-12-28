@@ -37,6 +37,10 @@ class User(TObject, web.Sticker):
         if uid is None:
             raise web.CompletionRedirect('/login')
         uid = int(uid)
+        return cls.get(inj, uid)
+
+    @classmethod
+    def get(cls, inj, uid):
         data = inj['redis'].execute("GET", 'user:{:d}'.format(uid))
         user = cls.load_blob(data)
         assert user.uid == uid

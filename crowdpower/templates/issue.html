@@ -1,0 +1,12 @@
+{% extends "base.html"%}
+{% block title %}Проблема #{{ issue.id }}{% endblock %}
+{% block body %}
+<h1>{{ issue.brief }}</h1>
+<p>
+{{ issue.reason }}
+</p>
+<p class="epigraph">
+{{ user.firstname }}
+{{ user.lastname }}
+</p>
+{% endblock body %}

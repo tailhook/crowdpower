@@ -7,7 +7,7 @@ from zorro import redis
 
 from .util import template
 from .register import Register
-from .issues import Issues
+from .issues import Issues, ShowIssue
 
 
 @has_dependencies
@@ -46,6 +46,7 @@ def main():
             web.DictResource(
                 issues=inj.inject(Issues()),
                 ),
+            inj.inject(ShowIssue()),
         ])
     sock = zmq.rep_socket(site)
     sock.dict_configure({

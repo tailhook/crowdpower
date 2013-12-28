@@ -89,3 +89,22 @@ class Issues(web.Resource):
         for f in futures:
             f.get()
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
+
+
+@has_dependencies
+class ShowIssue(web.Resource):
+
+    jinja = dependency(jinja2.Environment, 'jinja')
+    redis = dependency(redis.Redis, 'redis')
+
+    @template('issue.html')
+    @web.page
+    def i(self, num: int):
+        data = self.redis.execute('GET', 'issue:{:d}'.format(num))
+        issue = Issue.load_blob(data)
+        data = self.redis.execute('GET', 'issue:{:d}'.format(num))
+        user = User.get(di(self), issue.uid)
+        return {
+            'issue': issue,
+            'user': user,
+            }
