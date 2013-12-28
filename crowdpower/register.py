@@ -8,7 +8,6 @@ import wtforms
 import jinja2
 import uuid
 import os
-
 from wtforms import validators as val
 
 from .util import form, FormError
