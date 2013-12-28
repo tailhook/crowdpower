@@ -18,7 +18,6 @@
 
 
     handlers['vote'] = function(vote) {
-        console.log("VOTE", vote);
         var el = document.getElementById('votes_' + vote.issue);
         if(el) {
             el.textContent = vote.votes;
