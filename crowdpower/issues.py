@@ -1,6 +1,9 @@
+import json
+
 from zorro import web
 from zorro import redis
 from zorro.di import di
+from zorro import zerogw
 import wtforms
 import jinja2
 import yaml
@@ -77,6 +80,7 @@ class Issues(web.Resource):
 
     jinja = dependency(jinja2.Environment, 'jinja')
     redis = dependency(redis.Redis, 'redis')
+    output = dependency(zerogw.JSONWebsockOutput, "output")
 
     @template('newissue.html')
     @form(IssueForm)
@@ -110,6 +114,11 @@ class Issues(web.Resource):
         self.redis.pipeline([
             ('ZADD', 'rt:' + k, 0, iobj.id)
             for k in iobj.keys()])
+        self.output._do_send((b'sendall',
+            json.dumps(['vote', {
+                'issue': issue,
+                'votes': num,
+                }]).encode('utf-8')))
         raise web.CompletionRedirect('/i/{:d}'.format(iobj.id))
 
     @template('issuelist.html')
