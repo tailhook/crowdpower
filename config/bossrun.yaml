@@ -1,3 +1,6 @@
+bossrun:
+  failfast: yes
+
 Processes:
   zerogw:
     executable-path: /usr/bin/zerogw
@@ -6,7 +9,14 @@ Processes:
     - --config=config/zerogw.yaml
   python:
     executable-path: /usr/bin/python
+    environ:
+      PYTHONPATH: trafaret
     arguments:
     - python
     - -m
     - crowdpower
+  redis:
+    executable-path: /usr/bin/redis-server
+    arguments:
+    - redis-server
+    - config/redis.conf

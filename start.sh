@@ -1,5 +1,5 @@
 #!/bin/sh
 
-mkdir run 2> /dev/null || true
+mkdir run run/redis 2> /dev/null || true
 
 exec bossrun

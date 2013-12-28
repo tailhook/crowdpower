@@ -1,0 +1,3 @@
+[submodule "trafaret"]
+	path = trafaret
+	url = git@github.com:Deepwalker/trafaret.git

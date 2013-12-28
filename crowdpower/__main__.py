@@ -3,6 +3,7 @@ from zorro import Hub
 from zorro import zmq
 from zorro import web
 from zorro.di import DependencyInjector, dependency, has_dependencies
+from zorro import redis
 
 from .util import template
 from .register import Register
@@ -33,14 +34,14 @@ def main():
     inj = DependencyInjector()
     inj['jinja'] = jinja2.Environment(
         loader=jinja2.PackageLoader(__name__, 'templates'))
+    inj['redis'] = redis.Redis(
+        unixsock='run/redis/redis.sock')
 
     site = web.Site(
         request_class=Request,
         resources=[
-            web.DictResource(
-                register=inj.inject(Register())
-                ),
             inj.inject(About()),
+            inj.inject(Register()),
         ])
     sock = zmq.rep_socket(site)
     sock.dict_configure({
