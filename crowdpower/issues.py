@@ -1,4 +1,6 @@
 from zorro import web
+from zorro import redis
+from zorro.di import di
 import wtforms
 import jinja2
 import yaml
@@ -6,7 +8,7 @@ from itertools import product
 from wtforms import validators as val
 from zorro.di import dependency, has_dependencies
 from collections import OrderedDict
-import trafarets as T
+import trafaret as T
 
 from .util import template, form
 from .user import User
@@ -34,6 +36,7 @@ class IssueForm(wtforms.Form):
         validators=[val.Required()])
 
 
+@has_dependencies
 class Issue(TObject):
 
     redis = dependency(redis.Redis, 'redis')
@@ -48,7 +51,7 @@ class Issue(TObject):
 
     def keys(self):
         yield 'issues:all'
-        yield 'issues:l-{}'.format(t)
+        yield 'issues:l-{}'.format(self.level)
         for t in self.tags:
             yield 'issues:t-{}'.format(t)
         for t in self.tags:
@@ -70,13 +73,19 @@ class Issues(web.Resource):
     @web.page
     def new(self, user:User, brief, level, tags, reason):
         iid = int(self.redis.execute('INCR', 'issueid'))
-        issue = Issue(
+        siid = str(iid)
+        issue = di(self).inject(Issue(
             id=iid,
             uid=user.uid,
             brief=brief,
             level=level,
             tags=tags,
             reason=reason,
-            )
+            ))
         issue.save()
-        return {}
+        futures = []
+        for k in issue.keys():
+            futures.append(self.redis.future('ZADD', 'votes:' + k, 0, siid))
+        for f in futures:
+            f.get()
+        raise web.CompletionRedirect('/i/{:d}'.format(iid))
