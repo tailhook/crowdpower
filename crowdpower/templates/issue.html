@@ -9,4 +9,13 @@
 {{ user.firstname }}
 {{ user.lastname }}
 </p>
+
+<p class="footer">
+    {% for tl, t in issue.tag_links() %}
+        <a href="{{ tl }}">{{ t }}</a>
+    {% endfor %}
+    {% for ll, l in issue.level_links() %}
+        <a href="{{ ll }}">{{ l }}</a>
+    {% endfor %}
+</p>
 {% endblock body %}

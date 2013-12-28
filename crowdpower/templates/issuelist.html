@@ -1,0 +1,16 @@
+{% extends "base.html"%}
+{% block title %}Список проблем{% endblock %}
+{% block body %}
+{% for i in issues %}
+<section>
+<span class="marker">#{{ i.id }}</span>
+<p>{{ i.brief }} Votes: <b>{{ i.votes }}</b></p>
+    {% for tl, t in i.tag_links() %}
+        <a href="{{ tl }}">{{ t }}</a>
+    {% endfor %}
+    {% for ll, l in i.level_links() %}
+        <a href="{{ ll }}">{{ l }}</a>
+    {% endfor %}
+</section>
+{% endfor %}
+{% endblock body %}

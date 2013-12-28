@@ -25,6 +25,9 @@ with open('levels.yaml', 'rb') as f:
 with open('tags.yaml', 'rb') as f:
     TAGS = yaml.load(f)
 
+T_LEVEL = T.Enum(*LEVELS.keys())
+T_TAG = T.Enum(*TAGS.keys())
+
 
 class IssueForm(wtforms.Form):
 
@@ -44,8 +47,8 @@ class Issue(TObject):
         id=T.Int,
         uid=T.Int,
         brief=T.String,
-        level=T.Enum(*LEVELS.keys()),
-        tags=T.List(T.Enum(*TAGS.keys())),
+        level=T_LEVEL,
+        tags=T.List(T_TAG),
         reason=T.String,
         )
 
@@ -56,6 +59,13 @@ class Issue(TObject):
             yield 'issues:t-{}'.format(t)
         for t in self.tags:
             yield 'issues:l-{}:t-{}'.format(self.level, t)
+
+    def tag_links(self):
+        for t in self.tags:
+            yield '/issues/tag/{}'.format(t), TAGS[t]
+
+    def level_links(self):
+        yield '/issues/lev/{}'.format(self.level), LEVELS[self.level]
 
     def save(self):
         self.redis.execute("SET", 'issue:{:d}'.format(self.id),
@@ -83,12 +93,48 @@ class Issues(web.Resource):
             reason=reason,
             ))
         issue.save()
-        futures = []
-        for k in issue.keys():
-            futures.append(self.redis.future('ZADD', 'votes:' + k, 0, siid))
-        for f in futures:
-            f.get()
+        self.redis.pipeline([
+            ('ZADD', 'rt:' + k, 0, siid)
+            for k in issue.keys()])
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
+
+    @template('issuelist.html')
+    @web.page
+    def all(self, start:int=0, stop:int=9):
+        return self.redis_list('rt:issues:all', start=start, stop=stop)
+
+    @template('issuelist.html')
+    @web.page
+    def lev(self, lev:T_LEVEL, start:int=0, stop:int=9):
+        return self.redis_list('rt:issues:l-' + lev, start=start, stop=stop)
+
+    @template('issuelist.html')
+    @web.page
+    def tag(self, tag:T_TAG, start:int=0, stop:int=9):
+        return self.redis_list('rt:issues:t-' + tag, start=start, stop=stop)
+
+    @template('issuelist.html')
+    @web.page
+    def ltag(self, level:T_LEVEL, tag:T_TAG, start:int=0, stop:int=9):
+        return self.redis_list('rt:issues:l-{}:t-{}'.format(level, tag),
+            start=start, stop=stop)
+
+    def redis_list(self, key, *, start=0, stop=9):
+        ids = self.redis.execute('ZREVRANGE', key, start, stop)
+        ids = list(map(int, ids))
+        pipeline = []
+        for i in ids:
+            pipeline.append(('GET', 'issue:{:d}'.format(i)))
+            pipeline.append(('SCARD', 'votes:issue:{:d}'.format(i)))
+        issues = []
+        if pipeline:
+            for data, vt in zip(*[iter(self.redis.pipeline(pipeline))]*2):
+                i = Issue.load_blob(data)
+                i.votes = int(vt)
+                issues.append(i)
+        return {
+            'issues': issues,
+            }
 
 
 @has_dependencies
