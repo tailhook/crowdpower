@@ -54,3 +54,18 @@ class User(TObject, web.Sticker):
     def save(self):
         self.redis.execute("SET", 'user:{:d}'.format(self.uid),
             self.dump_blob())
+
+
+@has_dependencies
+class OptionalUser(User):
+
+    def __init__(self):
+        self.uid = 0
+
+    @classmethod
+    def create(cls, resolver):
+        try:
+            return User.create(resolver)
+        except web.CompletionRedirect:
+            return OptionalUser()
+

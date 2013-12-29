@@ -14,7 +14,7 @@ from collections import OrderedDict
 import trafaret as T
 
 from .util import template, form, save_form
-from .user import User
+from .user import User, OptionalUser
 from .tobject import TObject
 
 _ = lambda _: _
@@ -30,6 +30,12 @@ with open('tags.yaml', 'rb') as f:
 
 T_LEVEL = T.Enum(*LEVELS.keys())
 T_TAG = T.Enum(*TAGS.keys())
+T_STATE = T.Enum(
+    'draft', 'active',
+    'ready', 'sent',
+    'responded', 'timedout',
+    'preparing', 'acting',
+    'closed')
 
 
 class IssueForm(wtforms.Form):
@@ -46,14 +52,17 @@ class IssueForm(wtforms.Form):
 class Issue(TObject):
 
     redis = dependency(redis.Redis, 'redis')
-    contract = T.Dict(
-        id=T.Int,
-        uid=T.Int,
-        brief=T.String,
-        level=T_LEVEL,
-        tags=T.List(T_TAG),
-        reason=T.String,
-        )
+    contract = T.Dict({
+        'id': T.Int,
+        'uid': T.Int,
+        'brief': T.String,
+        'level': T_LEVEL,
+        'tags': T.List(T_TAG),
+        'reason': T.String,
+        T.Key('state', default='active'): T_STATE,
+        T.Key('response', optional=True): T.String,
+        T.Key('action', optional=True): T.String,
+        })
 
     def keys(self):
         yield 'issues:all'
@@ -152,31 +161,32 @@ class Issues(web.Resource):
 
     @template('issuelist.html')
     @web.page
-    def all(self, *, start:int=0, stop:int=9, user:User):
+    def all(self, *, start:int=0, stop:int=9, user:OptionalUser=None):
         return self.redis_list('rt:issues:all',
             start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def lev(self, lev:T_LEVEL, *, start:int=0, stop:int=9, user:User):
+    def lev(self, lev:T_LEVEL, *, start:int=0, stop:int=9, user:OptionalUser):
         return self.redis_list('rt:issues:l-' + lev,
             start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def tag(self, tag:T_TAG, *, start:int=0, stop:int=9, user:User):
+    def tag(self, tag:T_TAG, *, start:int=0, stop:int=9, user:OptionalUser):
         return self.redis_list('rt:issues:t-' + tag,
             start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def ltag(self, level:T_LEVEL, tag:T_TAG, *, start:int=0, stop:int=9, user:User):
+    def ltag(self, level:T_LEVEL, tag:T_TAG,
+        *, start:int=0, stop:int=9, user:OptionalUser):
         return self.redis_list('rt:issues:l-{}:t-{}'.format(level, tag),
             start=start, stop=stop, user=user)
 
     @web.page
     @template('home.html')
-    def index(self, user:User):
+    def index(self, user:OptionalUser):
         rated = self.redis.execute('ZREVRANGE', 'rt:issues:all', 0, 3)
         recent = self.redis.execute('LRANGE', 'rc:issues', 0, 3)
         return {
