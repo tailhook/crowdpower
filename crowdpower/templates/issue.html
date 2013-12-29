@@ -12,10 +12,10 @@
 
 <p class="footer">
     {% for tl, t in issue.tag_links() %}
-        <a href="{{ tl }}">{{ t }}</a>
+        <a href="{{ tl }}" class='label'>{{ t }}</a>
     {% endfor %}
     {% for ll, l in issue.level_links() %}
-        <a href="{{ ll }}">{{ l }}</a>
+        <a href="{{ ll }}" class='label label-info'>{{ l }}</a>
     {% endfor %}
 </p>
 {% endblock body %}

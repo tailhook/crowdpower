@@ -7,13 +7,23 @@
 <body>
     <div class="navbar">
         <div class="navbar-inner">
-            <div class="brand">Сила Мільйонів</div>
+            <div class="brand">
+                <a href="/">Сила Мільйонів</a></div>
             <ul class="nav">
+                <li
+                    {% if uri.startswith('/about') %}class="active"{% endif %}
+                    ><a href="/about">Про проект</a></li>
+                <li
+                    {% if uri.startswith('/issues')
+                        or uri.startswith('/i/') %}class="active"{% endif %}
+                    ><a href="/issues/all">Поточні Проблеми</a></li>
+
                 {% if user %}
                 <li
-                    >Ви ввійшли як {{ user.firstname }} {{ user.lastname }}</li>
-                <li
-                    ><a href="/logout">Вийти</a></li>
+                    ><a href="/profile">
+                        Ви ввійшли як {{ user.firstname }} {{ user.lastname }}
+                        </a></li>
+                <li><a href="/logout">Вийти</a></li>
                 {% else %}
                 <li
                     {% if uri.startswith('/login') %}class="active"{% endif %}
@@ -22,12 +32,6 @@
                     {% if uri.startswith('/register') %}class="active"{% endif %}
                     ><a href="/register">Реєстрація</a></li>
                 {% endif %}
-                <li
-                    {% if uri.startswith('/issues/new') %}class="active"{% endif %}
-                    ><a href="/issues/new">Нова Проблема</a></li>
-                <li
-                    {% if uri.startswith('/issues/all') %}class="active"{% endif %}
-                    ><a href="/issues/all">Поточні Проблеми</a></li>
             </ul>
         </div>
     </div>

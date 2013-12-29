@@ -1,0 +1,32 @@
+{% macro issue_row(issue, user) %}
+<tr>
+    <td class="marker">#<a href="/i/{{ issue.id }}">{{ issue.id }}</a>
+    </td><td>
+        {{ issue.brief }}
+    </td><td>
+        {% for tl, t in issue.tag_links() %}
+            <a href="{{ tl }}" class='label'>{{ t }}</a>
+        {% endfor %}
+    </td><td>
+        {% for ll, l in issue.level_links() %}
+            <a href="{{ ll }}" class='label label-info'>{{ l }}</a>
+        {% endfor %}
+    </td>
+    <td>
+        {% if issue.uid == user.uid or user.admin %}
+            <a href="/issues/edit/{{ issue.id }}">Редагувати</a>
+        {% endif %}
+    </td>
+    <td>
+         Голосів:
+            <span class="vote" id="votes_{{ issue.id }}">{{ issue.votes }}</b>
+        <form target="votetarget" method="POST" action="/issues/vote">
+        <input type="hidden" name="issue" value="{{ issue.id }}">
+        {% if issue.user_voted %}
+        <button class="button" disabled="disabled">Підтримано</button>
+        {% else %}
+        <button class="button" type="submit">Підтримати</button>
+        {% endif %}
+    </form></td>
+</tr>
+{% endmacro %}

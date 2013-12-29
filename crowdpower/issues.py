@@ -99,7 +99,9 @@ class Issues(web.Resource):
         issue.save()
         self.redis.pipeline([
             ('ZADD', 'rt:' + k, 0, siid)
-            for k in issue.keys()])
+            for k in issue.keys()]
+            + [('LPUSH', 'rc:issues', siid),
+               ('LTRIM', '0', '10')])
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
 
 
@@ -156,25 +158,39 @@ class Issues(web.Resource):
 
     @template('issuelist.html')
     @web.page
-    def lev(self, *, lev:T_LEVEL, start:int=0, stop:int=9, user:User):
+    def lev(self, lev:T_LEVEL, *, start:int=0, stop:int=9, user:User):
         return self.redis_list('rt:issues:l-' + lev,
             start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def tag(self, *, tag:T_TAG, start:int=0, stop:int=9, user:User):
+    def tag(self, tag:T_TAG, *, start:int=0, stop:int=9, user:User):
         return self.redis_list('rt:issues:t-' + tag,
             start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def ltag(self, *, level:T_LEVEL, tag:T_TAG, start:int=0, stop:int=9, user:User):
+    def ltag(self, level:T_LEVEL, tag:T_TAG, *, start:int=0, stop:int=9, user:User):
         return self.redis_list('rt:issues:l-{}:t-{}'.format(level, tag),
             start=start, stop=stop, user=user)
 
+    @web.page
+    @template('home.html')
+    def index(self, user:User):
+        rated = self.redis.execute('ZREVRANGE', 'rt:issues:all', 0, 3)
+        recent = self.redis.execute('LRANGE', 'rc:issues', 0, 3)
+        return {
+            'rated_issues': self.fetch_list(list(map(int, rated)), user),
+            'recent_issues': self.fetch_list(list(map(int, recent)), user),
+            }
+
     def redis_list(self, key, *, start=0, stop=9, user):
         ids = self.redis.execute('ZREVRANGE', key, start, stop)
-        ids = list(map(int, ids))
+        return {
+            'issues': self.fetch_list(list(map(int, ids)), user),
+            }
+
+    def fetch_list(self, ids, user):
         pipeline = []
         for i in ids:
             pipeline.append(('GET', 'issue:{:d}'.format(i)))
@@ -188,9 +204,7 @@ class Issues(web.Resource):
                 i.votes = int(vt)
                 i.user_voted = bool(int(uv))
                 issues.append(i)
-        return {
-            'issues': issues,
-            }
+        return issues
 
 
 @has_dependencies
@@ -198,6 +212,14 @@ class ShowIssue(web.Resource):
 
     jinja = dependency(jinja2.Environment, 'jinja')
     redis = dependency(redis.Redis, 'redis')
+
+    def __zorro_di_done__(self):
+        self.issues = di(self).inject(Issues())
+
+    @template('home.html')
+    @web.page
+    def index(self, user:User):
+        return self.issues.index(user=user)
 
     @template('issue.html')
     @web.page

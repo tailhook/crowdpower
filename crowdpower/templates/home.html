@@ -1,0 +1,21 @@
+{% from "util.html" import issue_row %}
+{% extends "base.html"%}
+{% block title %}Що цікавить громадян України?{% endblock %}
+{% block body %}
+<h2>Свіжі надходження</h2>
+<a class="btn btn-primary" style='float:right'
+    href="/issues/all">Всі проблеми</a>
+<table class="table table-striped">
+{% for i in recent_issues %}
+    {{ issue_row(i, user) }}
+{% endfor %}
+</table>
+<h2>Найбільш потрібні</h2>
+<a class="btn btn-primary" style='float:right'
+    href="/issues/all">Всі проблеми</a>
+<table class="table table-striped">
+{% for i in rated_issues %}
+    {{ issue_row(i, user) }}
+{% endfor %}
+</table>
+{% endblock body %}

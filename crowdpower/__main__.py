@@ -17,8 +17,8 @@ class About(web.Resource):
     jinja = dependency(jinja2.Environment, 'jinja')
 
     @web.page
-    @template('index.html')
-    def index(self):
+    @template('about.html')
+    def about(self):
         return {}
 
 
@@ -55,9 +55,6 @@ def main():
         resources=[
             inj.inject(About()),
             inj.inject(Register()),
-            web.DictResource(
-                issues=inj.inject(Issues()),
-                ),
             inj.inject(ShowIssue()),
         ])
     sock = zmq.rep_socket(site)

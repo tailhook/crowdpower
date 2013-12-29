@@ -1,38 +1,12 @@
+{% from "util.html" import issue_row %}
 {% extends "base.html"%}
 {% block title %}Список проблем{% endblock %}
 {% block body %}
+<a class="btn btn-primary" style='float:right'
+    href="/issues/new">Додати пропозицію</a>
 <table class="table table-striped">
 {% for i in issues %}
-<tr>
-    <td class="marker">#{{ i.id }}
-    </td><td>
-        {{ i.brief }}
-    </td><td>
-        {% for tl, t in i.tag_links() %}
-            <a href="{{ tl }}">{{ t }}</a>
-        {% endfor %}
-    </td><td>
-        {% for ll, l in i.level_links() %}
-            <a href="{{ ll }}">{{ l }}</a>
-        {% endfor %}
-    </td>
-    <td>
-        {% if i.uid == user.uid or user.admin %}
-            <a href="/issues/edit/{{ i.id }}">Редагувати</a>
-        {% endif %}
-    </td>
-    <td>
-         Голосів:
-            <span class="vote" id="votes_{{ i.id }}">{{ i.votes }}</b>
-        <form target="votetarget" method="POST" action="/issues/vote">
-        <input type="hidden" name="issue" value="{{ i.id }}">
-        {% if i.user_voted %}
-        <button class="button" disabled="disabled">Підтримано</button>
-        {% else %}
-        <button class="button" type="submit">Підтримати</button>
-        {% endif %}
-    </form></td>
-</tr>
+{{ issue_row(i, user) }}
 {% endfor %}
 </table>
 {% endblock body %}
