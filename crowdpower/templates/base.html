@@ -5,17 +5,33 @@
     <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-    <h1>{{ self.title() }}</h1>
-    <div class="container">     
-        <div class="span5 center-block">
-            <ul class="nav nav-pills">
-                <li><a href="/login">Login</a></li>
-                <li class="active"><a href="/register">Register</a></li>
-                <li><a href="/issues/new">New Issue</a></li>
-                <li><a href="/issues/all">All Issues</a></li>
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="brand">Сила Мільйонів</div>
+            <ul class="nav">
+                {% if user %}
+                <li
+                    >Ви ввійшли як {{ user.firstname }} {{ user.lastname }}</li>
+                <li
+                    ><a href="/logout">Вийти</a></li>
+                {% else %}
+                <li
+                    {% if uri.startswith('/login') %}class="active"{% endif %}
+                    ><a href="/login">Ввійти</a></li>
+                <li
+                    {% if uri.startswith('/register') %}class="active"{% endif %}
+                    ><a href="/register">Реєстрація</a></li>
+                {% endif %}
+                <li
+                    {% if uri.startswith('/issues/new') %}class="active"{% endif %}
+                    ><a href="/issues/new">Нова Проблема</a></li>
+                <li
+                    {% if uri.startswith('/issues/all') %}class="active"{% endif %}
+                    ><a href="/issues/all">Поточні Проблеми</a></li>
             </ul>
         </div>
     </div>
+    <h1>{{ self.title() }}</h1>
     {% block body %}{% endblock %}
     <footer class="footer">(c) 2013 CrowdPower Team</footer>
 </body>

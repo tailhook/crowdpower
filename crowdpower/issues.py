@@ -121,9 +121,9 @@ class Issues(web.Resource):
         iobj.reason = reason
         newkeys = set(iobj.keys())
         iobj.save()
-        kdiff = [('ZADD', 'rt:' + k, 0, siid)
+        kdiff = [('ZADD', 'rt:' + k, 0, iobj.id)
                  for k in newkeys - oldkeys
-                ] + [('ZREM', 'rt:' + k, 0, siid)
+                ] + [('ZREM', 'rt:' + k, 0, iobj.id)
                  for k in oldkeys - newkeys]
         if kdiff:
             self.redis.pipeline(kdiff)
@@ -150,37 +150,43 @@ class Issues(web.Resource):
 
     @template('issuelist.html')
     @web.page
-    def all(self, start:int=0, stop:int=9):
-        return self.redis_list('rt:issues:all', start=start, stop=stop)
+    def all(self, *, start:int=0, stop:int=9, user:User):
+        return self.redis_list('rt:issues:all',
+            start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def lev(self, lev:T_LEVEL, start:int=0, stop:int=9):
-        return self.redis_list('rt:issues:l-' + lev, start=start, stop=stop)
+    def lev(self, *, lev:T_LEVEL, start:int=0, stop:int=9, user:User):
+        return self.redis_list('rt:issues:l-' + lev,
+            start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def tag(self, tag:T_TAG, start:int=0, stop:int=9):
-        return self.redis_list('rt:issues:t-' + tag, start=start, stop=stop)
+    def tag(self, *, tag:T_TAG, start:int=0, stop:int=9, user:User):
+        return self.redis_list('rt:issues:t-' + tag,
+            start=start, stop=stop, user=user)
 
     @template('issuelist.html')
     @web.page
-    def ltag(self, level:T_LEVEL, tag:T_TAG, start:int=0, stop:int=9):
+    def ltag(self, *, level:T_LEVEL, tag:T_TAG, start:int=0, stop:int=9, user:User):
         return self.redis_list('rt:issues:l-{}:t-{}'.format(level, tag),
-            start=start, stop=stop)
+            start=start, stop=stop, user=user)
 
-    def redis_list(self, key, *, start=0, stop=9):
+    def redis_list(self, key, *, start=0, stop=9, user):
         ids = self.redis.execute('ZREVRANGE', key, start, stop)
         ids = list(map(int, ids))
         pipeline = []
         for i in ids:
             pipeline.append(('GET', 'issue:{:d}'.format(i)))
             pipeline.append(('SCARD', 'votes:issue:{:d}'.format(i)))
+            pipeline.append(('SISMEMBER',
+                'votes:issue:{:d}'.format(i), str(user.uid)))
         issues = []
         if pipeline:
-            for data, vt in zip(*[iter(self.redis.pipeline(pipeline))]*2):
+            for data, vt, uv in zip(*[iter(self.redis.pipeline(pipeline))]*3):
                 i = Issue.load_blob(data)
                 i.votes = int(vt)
+                i.user_voted = bool(int(uv))
                 issues.append(i)
         return {
             'issues': issues,

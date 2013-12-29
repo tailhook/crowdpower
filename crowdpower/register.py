@@ -110,11 +110,24 @@ class Register(web.Resource):
                 mhash = binascii.a2b_base64(salt) + password.encode('ascii')
                 hh = hashlib.sha256(mhash)
                 if hash == hh.hexdigest():
-                    uid = self.redis.execute('HGET', 'emails', email)
+                    uid = int(self.redis.execute('HGET', 'emails', email))
                     self.authorize(uid)
             except ValueError:
                 pass
         raise FormError('email', _('Невірний e-mail або пароль'))
+
+    @web.page
+    def logout(self, req:web.Request):
+        sid = req.cookies.get('sida')
+        if sid:
+            self.redis.execute('DEL', 'sess:' + sid)
+        sid = req.cookies.get('sidb')
+        if sid:
+            self.redis.execute('DEL', 'sess:' + sid)
+        cookie = Cookie()
+        cookie['sida'] = ''
+        cookie['sidb'] = ''
+        raise web.CompletionRedirect('/', cookie=cookie)
 
     @web.page
     def uid(self, user: User):

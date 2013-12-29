@@ -27,6 +27,8 @@ class User(TObject, web.Sticker):
     @classmethod
     def create(cls, resolver):
         req = resolver.request
+        if hasattr(resolver, 'user'):
+            return resolver.user
         sid = req.cookies.get('sidb')
         if sid is None:
             sid = req.cookies.get('sida')
@@ -38,7 +40,9 @@ class User(TObject, web.Sticker):
         if uid is None:
             raise web.CompletionRedirect('/login')
         uid = int(uid)
-        return cls.get(inj, uid)
+        user = cls.get(inj, uid)
+        resolver.user = user
+        return user
 
     @classmethod
     def get(cls, inj, uid):

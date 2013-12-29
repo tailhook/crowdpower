@@ -1,6 +1,8 @@
 from zorro import web
 from zorro.di import di
 
+from .user import User
+
 
 class FormError(Exception):
 
@@ -13,9 +15,18 @@ def template(name):
     def decorator(fun):
         @web.postprocessor(fun)
         def wrapper(self, resolver, data):
+            try:
+                u = User.create(resolver)
+            except web.CompletionRedirect:
+                u = None
+            adata = {
+                'user': u,
+                'uri': resolver.request.parsed_uri.path,
+                }
+            adata.update(data)
             return ('200 OK',
                     'Content-Type\0text/html; charset=utf-8\0',
-                    self.jinja.get_template(name).render(data))
+                    self.jinja.get_template(name).render(adata))
         return wrapper
     return decorator
 
