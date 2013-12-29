@@ -118,6 +118,19 @@ class Issues(web.Resource):
     redis = dependency(redis.Redis, 'redis')
     output = dependency(zerogw.JSONWebsockOutput, "output")
 
+    def head(self):
+        tlist = list(TAGS)
+        tgen = self.redis.pipeline([
+            ('ZCARD', 'rt:issues:t-{}'.format(t))
+            for t in tlist])
+        return {
+            'tags': [{
+                'tag': t,
+                'title': TAGS[t],
+                'issues': int(num),
+                } for t, num in zip(tlist, tgen)],
+            }
+
     @template('newissue.html')
     @form(IssueForm)
     @web.page
@@ -214,12 +227,14 @@ class Issues(web.Resource):
         return {
             'rated_issues': self.fetch_list(list(map(int, rated)), user),
             'recent_issues': self.fetch_list(list(map(int, recent)), user),
+            'head': self.head(),
             }
 
     def redis_list(self, key, *, start=0, stop=9, user):
         ids = self.redis.execute('ZREVRANGE', key, start, stop)
         return {
             'issues': self.fetch_list(list(map(int, ids)), user),
+            'head': self.head(),
             }
 
     def fetch_list(self, ids, user):

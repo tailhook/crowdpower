@@ -30,3 +30,10 @@
     </form></td>
 </tr>
 {% endmacro %}
+
+{% macro tags_header(tags) %}
+    {% for t in tags %}
+        <a href="/issues/tag/{{ t.tag }}" class='label'>
+            {{ t.title }} ({{ t.issues }})</a>
+    {% endfor %}
+{% endmacro %}

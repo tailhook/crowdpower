@@ -1,7 +1,8 @@
-{% from "util.html" import issue_row %}
+{% from "util.html" import issue_row, tags_header %}
 {% extends "base.html"%}
 {% block title %}Список петицій{% endblock %}
 {% block body %}
+{{ tags_header(head.tags) }}
 <a class="btn btn-primary" style='float:right'
     href="/issues/new">Створити пропозицію</a>
 <table class="table table-striped">

@@ -1,4 +1,4 @@
-{% from "util.html" import issue_row %}
+{% from "util.html" import issue_row, tags_header %}
 {% extends "base.html"%}
 {% block title %}{% endblock %}
 {% block body %}
@@ -11,6 +11,7 @@
 {% endfor %}
 </table>
 <h2>Актуальні петиції</h2>
+{{ tags_header(head.tags) }}
 <a class="btn btn-primary" style='float:right'
     href="/issues/all">Всі петиції</a>
 <table class="table table-striped">
