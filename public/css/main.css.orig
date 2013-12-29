@@ -1,5 +1,4 @@
 body {
-  background-color: #f5f5f5;
 }
 h1 {
   text-align: center;
@@ -34,6 +33,11 @@ h1 {
   border-top: 1px solid #e5e5e5;
   background-color: #f5f5f5;
 }
+<<<<<<< Updated upstream
+.vote {
+    font-size: 250%;
+    vertical-align: middle;
+=======
 .right-arrow {
   background-image: url(../img/right.png);
   height: 48px;
@@ -56,6 +60,7 @@ h1 {
 }
 .steps-container.nav > li > a:hover,
 .steps-container.nav-tabs > li > a:focus {
-  background-color: transparent;
-  border-color: transparent;
+  background-color: none;
+  border-color: none;
+>>>>>>> Stashed changes
 }
