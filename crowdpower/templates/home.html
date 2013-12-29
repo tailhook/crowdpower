@@ -4,7 +4,7 @@
 {% block body %}
 <h2>Свіжі надходження</h2>
 <a class="btn btn-primary" style='float:right'
-    href="/issues/all">Всі проблеми</a>
+    href="/issues/all">Всі петиції</a>
 <table class="table table-striped">
 {% for i in recent_issues %}
     {{ issue_row(i, user) }}
@@ -12,7 +12,7 @@
 </table>
 <h2>Найбільш потрібні</h2>
 <a class="btn btn-primary" style='float:right'
-    href="/issues/all">Всі проблеми</a>
+    href="/issues/all">Всі петиції</a>
 <table class="table table-striped">
 {% for i in rated_issues %}
     {{ issue_row(i, user) }}

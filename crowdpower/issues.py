@@ -1,4 +1,6 @@
 import json
+import time
+from itertools import product
 
 from zorro import web
 from zorro import redis
@@ -7,7 +9,6 @@ from zorro import zerogw
 import wtforms
 import jinja2
 import yaml
-from itertools import product
 from wtforms import validators as val
 from zorro.di import dependency, has_dependencies
 from collections import OrderedDict
@@ -92,18 +93,19 @@ class Issue(TObject):
         yield '/issues/lev/{}'.format(self.level), LEVELS[self.level]
 
     def save(self):
+        oldkeys = self._oldkeys
         newkeys = set(self._keys())
         self.redis.execute("SET", 'issue:{:d}'.format(self.id),
             self.dump_blob())
         num = self.redis.execute('SCARD',
-            'votes:issue:{:d}'.format(iobj.id))
-        kdiff = [('ZADD', 'rt:' + k, num, iobj.id)
+            'votes:issue:{:d}'.format(self.id))
+        kdiff = [('ZADD', 'rt:' + k, num, self.id)
                  for k in newkeys - oldkeys
-                ] + [('ZADD', 'rc:' + k, iobj.startdate, iobj.id)
-                 for k in oldkeys - newkeys]
-                ] + [('ZREM', 'rt:' + k, iobj.id)
+                ] + [('ZADD', 'rc:' + k, self.startdate, self.id)
                  for k in oldkeys - newkeys
-                ] + [('ZREM', 'rc:' + k, iobj.id)
+                ] + [('ZREM', 'rt:' + k, self.id)
+                 for k in oldkeys - newkeys
+                ] + [('ZREM', 'rc:' + k, self.id)
                  for k in oldkeys - newkeys]
         if kdiff:
             self.redis.pipeline(kdiff)
@@ -124,6 +126,7 @@ class Issues(web.Resource):
         siid = str(iid)
         issue = di(self).inject(Issue(
             id=iid,
+            startdate=int(time.time()),
             uid=user.uid,
             brief=brief,
             level=level,
@@ -133,9 +136,9 @@ class Issues(web.Resource):
         issue.save()
         self.redis.pipeline([
             ('ZADD', 'rt:' + k, 0, siid)
-            for k in issue.keys()]
-            + [('LPUSH', 'rc:issues', siid),
-               ('LTRIM', '0', '10')])
+            for k in issue._keys()
+            ] + [('ZADD', 'rc:' + k, issue.startdate, issue.id)
+            for k in issue._keys()])
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
 
 
@@ -170,7 +173,7 @@ class Issues(web.Resource):
             'votes:issue:{:d}'.format(iobj.id))
         self.redis.pipeline([
             ('ZADD', 'rt:' + k, num, iobj.id)
-            for k in iobj.keys()])
+            for k in iobj._keys()])
         self.output._do_send((b'sendall',
             json.dumps(['vote', {
                 'issue': issue,
