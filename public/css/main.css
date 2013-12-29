@@ -46,6 +46,7 @@ h1 {
 }
 .steps-container li p {
   text-align: center;
+  padding-top: 10px;
 }
 
 .steps-container img {
@@ -60,8 +61,4 @@ h1 {
 .steps-container.nav-tabs > li > a:focus {
   background-color: transparent;
   border-color: transparent;
-}
-.vote {
-    font-size: 250%;
-    vertical-align: middle;
 }
