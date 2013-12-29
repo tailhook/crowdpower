@@ -55,7 +55,6 @@ h1 {
 .steps-container img:hover {
   -webkit-transition: all 0.2s ease;
   -webkit-filter: drop-shadow(0px 0px 10px gray) grayscale(0);
-  -webkit-transform: scale(1.03, 1.03) rotate(3deg);
 }
 .steps-container.nav > li > a:hover,
 .steps-container.nav-tabs > li > a:focus {
