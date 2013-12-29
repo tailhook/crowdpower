@@ -14,7 +14,7 @@
     </td>
     <td>
         {% if issue.uid == user.uid or user.admin %}
-            <a href="/issues/edit/{{ issue.id }}">Редагувати</a>
+            <a href="/issues/edit/{{ issue.id }}" class="btn btn-warning">Редагувати</a>
         {% endif %}
     </td>
     <td nowrap="nowrap">
@@ -23,9 +23,9 @@
             <span class="vote" id="votes_{{ issue.id }}">{{ issue.votes }}</b>
         <input type="hidden" name="issue" value="{{ issue.id }}">
         {% if issue.user_voted %}
-        <button class="button" disabled="disabled">Підтримано</button>
+        <button class="btn" disabled="disabled">Підтримано</button>
         {% else %}
-        <button class="button" type="submit">Підтримати</button>
+        <button class="btn" type="submit">Підтримати</button>
         {% endif %}
     </form></td>
 </tr>
