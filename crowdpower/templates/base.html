@@ -16,7 +16,15 @@
                 <li
                     {% if uri.startswith('/issues')
                         or uri.startswith('/i/') %}class="active"{% endif %}
-                    ><a href="/issues/all">Поточні Проблеми</a></li>
+                    ><a href="/issues/all">Петиції</a></li>
+                <li
+                    {% if uri.startswith('/actions')
+                        %}class="active"{% endif %}
+                    ><a href="/actions/all">Пряма дія</a></li>
+                <li
+                    {% if uri.startswith('/deletages')
+                        %}class="active"{% endif %}
+                    ><a href="/delegates/all">Результати</a></li>
 
                 {% if user %}
                 <li

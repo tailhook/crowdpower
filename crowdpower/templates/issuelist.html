@@ -1,9 +1,9 @@
 {% from "util.html" import issue_row %}
 {% extends "base.html"%}
-{% block title %}Список проблем{% endblock %}
+{% block title %}Список петицій{% endblock %}
 {% block body %}
 <a class="btn btn-primary" style='float:right'
-    href="/issues/new">Додати пропозицію</a>
+    href="/issues/new">Створити пропозицію</a>
 <table class="table table-striped">
 {% for i in issues %}
 {{ issue_row(i, user) }}

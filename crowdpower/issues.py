@@ -35,7 +35,7 @@ T_STATE = T.Enum(
     'ready', 'sent',
     'responded', 'timedout',
     'preparing', 'acting',
-    'closed')
+    'archive')
 
 
 class IssueForm(wtforms.Form):
@@ -55,6 +55,7 @@ class Issue(TObject):
     contract = T.Dict({
         'id': T.Int,
         'uid': T.Int,
+        'startdate': T.Int,
         'brief': T.String,
         'level': T_LEVEL,
         'tags': T.List(T_TAG),
@@ -64,13 +65,24 @@ class Issue(TObject):
         T.Key('action', optional=True): T.String,
         })
 
-    def keys(self):
-        yield 'issues:all'
-        yield 'issues:l-{}'.format(self.level)
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+        self._oldkeys = set(self._keys())
+
+    def _keys(self):
+        if self.state == 'draft':
+            yield 'drafts:all'
+            return
+        if self.state == 'archive':
+            p = 'archive:'
+        else:
+            p = 'issues:'
+        yield p + 'all'
+        yield p + 'l-{}'.format(self.level)
         for t in self.tags:
-            yield 'issues:t-{}'.format(t)
+            yield p + 't-{}'.format(t)
         for t in self.tags:
-            yield 'issues:l-{}:t-{}'.format(self.level, t)
+            yield p + 'l-{}:t-{}'.format(self.level, t)
 
     def tag_links(self):
         for t in self.tags:
@@ -80,8 +92,21 @@ class Issue(TObject):
         yield '/issues/lev/{}'.format(self.level), LEVELS[self.level]
 
     def save(self):
+        newkeys = set(self._keys())
         self.redis.execute("SET", 'issue:{:d}'.format(self.id),
             self.dump_blob())
+        num = self.redis.execute('SCARD',
+            'votes:issue:{:d}'.format(iobj.id))
+        kdiff = [('ZADD', 'rt:' + k, num, iobj.id)
+                 for k in newkeys - oldkeys
+                ] + [('ZADD', 'rc:' + k, iobj.startdate, iobj.id)
+                 for k in oldkeys - newkeys]
+                ] + [('ZREM', 'rt:' + k, iobj.id)
+                 for k in oldkeys - newkeys
+                ] + [('ZREM', 'rc:' + k, iobj.id)
+                 for k in oldkeys - newkeys]
+        if kdiff:
+            self.redis.pipeline(kdiff)
 
 
 @has_dependencies
@@ -132,12 +157,6 @@ class Issues(web.Resource):
         iobj.reason = reason
         newkeys = set(iobj.keys())
         iobj.save()
-        kdiff = [('ZADD', 'rt:' + k, 0, iobj.id)
-                 for k in newkeys - oldkeys
-                ] + [('ZREM', 'rt:' + k, 0, iobj.id)
-                 for k in oldkeys - newkeys]
-        if kdiff:
-            self.redis.pipeline(kdiff)
         raise web.CompletionRedirect('/i/{:d}'.format(iobj.id))
 
     @web.page
