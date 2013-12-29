@@ -210,7 +210,7 @@ class Issues(web.Resource):
     @template('home.html')
     def index(self, user:OptionalUser):
         rated = self.redis.execute('ZREVRANGE', 'rt:issues:all', 0, 3)
-        recent = self.redis.execute('LRANGE', 'rc:issues', 0, 3)
+        recent = self.redis.execute('ZREVRANGE', 'rc:issues:all', 0, 3)
         return {
             'rated_issues': self.fetch_list(list(map(int, rated)), user),
             'recent_issues': self.fetch_list(list(map(int, recent)), user),
