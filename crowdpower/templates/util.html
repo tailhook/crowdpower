@@ -17,10 +17,10 @@
             <a href="/issues/edit/{{ issue.id }}">Редагувати</a>
         {% endif %}
     </td>
-    <td>
+    <td nowrap="nowrap">
+        <form target="votetarget" method="POST" action="/issues/vote">
          Голосів:
             <span class="vote" id="votes_{{ issue.id }}">{{ issue.votes }}</b>
-        <form target="votetarget" method="POST" action="/issues/vote">
         <input type="hidden" name="issue" value="{{ issue.id }}">
         {% if issue.user_voted %}
         <button class="button" disabled="disabled">Підтримано</button>
