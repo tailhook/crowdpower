@@ -265,7 +265,7 @@ class ShowIssue(web.Resource):
 
     @template('home.html')
     @web.page
-    def index(self, user:User):
+    def index(self, user:OptionalUser):
         return self.issues.index(user=user)
 
     @template('issue.html')
