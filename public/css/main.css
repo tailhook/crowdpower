@@ -59,3 +59,7 @@ h1 {
   background-color: transparent;
   border-color: transparent;
 }
+.vote {
+    font-size: 250%;
+    vertical-align: middle;
+}
