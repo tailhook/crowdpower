@@ -37,3 +37,15 @@
             {{ t.title }} ({{ t.issues }})</a>
     {% endfor %}
 {% endmacro %}
+
+{% macro big_crappy_steps() %}
+    <ul class="steps-container nav nav-tabs span10 center-block">
+        <li><a href="#"><img src="/img/steps/1.png" /><p>Перший крок</p></a></li>
+        <li class="right-arrow"></li>
+        <li><a href="#"><img src="/img/steps/2.png" /><p>Другий крок</p></a></li>
+        <li class="right-arrow"></li>
+        <li><a href="#"><img src="/img/steps/3.png" /><p>Третій крок</p></a></li>
+        <li class="right-arrow"></li>
+        <li><a href="#"><img src="/img/steps/4.png" /><p>Четвертий крок</p></a></li>
+    </ul>
+{% endmacro %}

@@ -1,7 +1,8 @@
-{% from "util.html" import issue_row, tags_header %}
+{% from "util.html" import issue_row, tags_header, big_crappy_steps %}
 {% extends "base.html"%}
 {% block title %}{% endblock %}
 {% block body %}
+{{ big_crappy_steps() }}
 <h2>Свіжі надходження</h2>
 <a class="btn btn-primary" style='float:right'
     href="/issues/all">Всі петиції</a>

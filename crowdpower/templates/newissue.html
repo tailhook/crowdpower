@@ -1,6 +1,8 @@
 {% extends "base.html"%}
 {% from "form.html" import render_form %}
+{% from "util.html" import big_crappy_steps %}
 {% block title %}Опишіть проблему{% endblock %}
 {% block body %}
+{{ big_crappy_steps() }}
 {{ render_form(form, method="POST") }}
 {% endblock body %}
