@@ -1,5 +1,5 @@
 {% macro render_form(form, method='POST', submit_text="Submit") %}
-<form method="{{ method }}">
+<form class="form-signin" method="{{ method }}">
 <ul>
 {% for field in form %}
     <li>{{ field.label }} {{ field }}
@@ -13,6 +13,6 @@
         </li>
 {% endfor %}
 </ul>
-<input type="submit" value="{{ submit_text }}">
+<input class="btn btn-lg btn-primary btn-block" type="submit" value="{{ submit_text }}">
 </form>
 {% endmacro %}
