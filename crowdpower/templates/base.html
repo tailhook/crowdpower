@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <head>
     <title>{% block title %}Crowd Power{% endblock %}</title>
-    <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/bootstrap.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
     <h1>{{ self.title() }}</h1>
+    <div class="container">     
+        <div class="span5 center-block">
+            <ul class="nav nav-pills">
+                <li><a href="/login">Login</a></li>
+                <li class="active"><a href="/register">Register</a></li>
+                <li><a href="/issues/new">New Issue</a></li>
+                <li><a href="/issues/all">All Issues</a></li>
+            </ul>
+        </div>
+    </div>
     {% block body %}{% endblock %}
     <footer class="footer">(c) 2013 CrowdPower Team</footer>
 </body>
