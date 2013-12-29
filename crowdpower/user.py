@@ -12,15 +12,16 @@ class User(TObject, web.Sticker):
 
     redis = dependency(redis.Redis, 'redis')
 
-    contract = T.Dict(
-        uid=T.Int,
-        firstname=T.String,
-        middlename=T.String,
-        lastname=T.String,
-        birthyear=T.Int,
-        email=T.String,
-        phone=T.String,
-        )
+    contract = T.Dict({
+        'uid': T.Int,
+        'firstname': T.String,
+        'middlename': T.String,
+        'lastname': T.String,
+        'birthyear': T.Int,
+        'email': T.String,
+        'phone': T.String,
+        T.Key('admin', default=0): T.Int,
+        })
 
 
     @classmethod

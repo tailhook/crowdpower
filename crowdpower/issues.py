@@ -13,7 +13,7 @@ from zorro.di import dependency, has_dependencies
 from collections import OrderedDict
 import trafaret as T
 
-from .util import template, form
+from .util import template, form, save_form
 from .user import User
 from .tobject import TObject
 
@@ -101,6 +101,33 @@ class Issues(web.Resource):
             ('ZADD', 'rt:' + k, 0, siid)
             for k in issue.keys()])
         raise web.CompletionRedirect('/i/{:d}'.format(iid))
+
+
+    def get_issue(self, issue):
+        data = self.redis.execute('GET', 'issue:{:d}'.format(int(issue)))
+        iobj = di(self).inject(Issue.load_blob(data))
+        return iobj
+
+    @template('newissue.html')
+    @save_form(IssueForm, get_issue)
+    @web.page
+    def edit(self, user:User, iobj, brief, level, tags, reason):
+        if iobj.uid != user.uid and not user.admin:
+            raise web.CompletionRedirect('/login')
+        oldkeys = set(iobj.keys())
+        iobj.brief = brief
+        iobj.level = level
+        iobj.tags = tags
+        iobj.reason = reason
+        newkeys = set(iobj.keys())
+        iobj.save()
+        kdiff = [('ZADD', 'rt:' + k, 0, siid)
+                 for k in newkeys - oldkeys
+                ] + [('ZREM', 'rt:' + k, 0, siid)
+                 for k in oldkeys - newkeys]
+        if kdiff:
+            self.redis.pipeline(kdiff)
+        raise web.CompletionRedirect('/i/{:d}'.format(iobj.id))
 
     @web.page
     def vote(self, issue:int, user:User):

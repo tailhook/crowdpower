@@ -36,3 +36,20 @@ def form(form_class):
                 return dict(form=form)
         return form_processor
     return decorator
+
+def save_form(form_class, getter):
+    def decorator(fun):
+        @web.decorator(fun)
+        def form_processor(self, resolver, meth, objid, *args, **kw):
+            obj = getter(self, objid)
+            form = form_class(resolver.request.legacy_arguments, obj=obj)
+            if kw and form.validate():
+                try:
+                    return meth(obj, **form.data)
+                except FormError as e:
+                    getattr(form, e.field).errors.append(e.text)
+                    return dict(form=form)
+            else:
+                return dict(form=form)
+        return form_processor
+    return decorator
