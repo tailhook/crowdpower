@@ -141,7 +141,7 @@ class Issues(web.Resource):
         num = self.redis.execute('SCARD',
             'votes:issue:{:d}'.format(iobj.id))
         self.redis.pipeline([
-            ('ZADD', 'rt:' + k, 0, iobj.id)
+            ('ZADD', 'rt:' + k, num, iobj.id)
             for k in iobj.keys()])
         self.output._do_send((b'sendall',
             json.dumps(['vote', {
