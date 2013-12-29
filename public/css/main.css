@@ -3,7 +3,7 @@ body {
 h1 {
   text-align: center;
 }
-div.center-block {
+.center-block {
   float: none;
   display: block;
   margin-left: auto;
@@ -36,4 +36,29 @@ div.center-block {
 .vote {
     font-size: 250%;
     vertical-align: middle;
+}
+.right-arrow {
+  background-image: url(../img/right.png);
+  height: 48px;
+  width: 48px;
+  margin-top: 50px;
+}
+.steps {
+  height: 120px;
+  width: 120px;
+}
+.steps-container li p {
+  text-align: center;
+}
+
+.steps-container img {
+  -webkit-filter: grayscale(0.3);
+}
+.steps-container img:hover {
+  -webkit-filter: drop-shadow(0px 0px 10px gray) grayscale(0);
+}
+.steps-container.nav > li > a:hover,
+.steps-container.nav-tabs > li > a:focus {
+  background-color: none;
+  border-color: none;
 }
