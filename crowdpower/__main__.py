@@ -5,6 +5,7 @@ from zorro import web
 from zorro.di import DependencyInjector, dependency, has_dependencies
 from zorro import redis
 from zorro import zerogw
+import argparse
 
 from .util import template
 from .register import Register
@@ -33,14 +34,19 @@ class Request(web.Request):
 
 def main():
 
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-s', '--sockdir', default='./run')
+    ap.add_argument('-r', '--redis', default='run/redis')
+    options = ap.parse_args()
+
     inj = DependencyInjector()
     inj['jinja'] = jinja2.Environment(
         loader=jinja2.PackageLoader(__name__, 'templates'))
     inj['redis'] = redis.Redis(
-        unixsock='run/redis/redis.sock')
+        unixsock=options.redis + '/redis.sock')
 
     sock = zmq.pub_socket()
-    sock.dict_configure({'connect': 'ipc://./run/sub.sock'})
+    sock.dict_configure({'connect': 'ipc://' + options.sockdir + '/sub.sock'})
     output = zerogw.JSONWebsockOutput(sock)
     inj['output'] = output
 
@@ -48,7 +54,7 @@ def main():
         resources=[],
         output=output,
         )))
-    sock.dict_configure({'connect': 'ipc://./run/fw.sock'})
+    sock.dict_configure({'connect': 'ipc://' + options.sockdir + '/fw.sock'})
 
     site = web.Site(
         request_class=Request,
@@ -59,7 +65,7 @@ def main():
         ])
     sock = zmq.rep_socket(site)
     sock.dict_configure({
-        'connect': 'ipc://./run/http.sock'
+        'connect': 'ipc://' + options.sockdir + '/http.sock'
         })
 
 
